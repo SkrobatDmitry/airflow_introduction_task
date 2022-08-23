@@ -27,16 +27,19 @@ def load():
     data = pd.read_csv('/home/ethereal/airflow/update_reviews.csv')
     data = data.to_dict(orient='records')
 
-    client = MongoClient('127.0.0.1', 27017)
+    host = Variable.get('mongo_hostname')
+    port = int(Variable.get('mongo_port'))
+
+    client = MongoClient(host, port)
     db = client['airflow']
-    collection = db['review']
+    collection = db['reviews']
 
     collection.drop()
     collection.insert_many(data)
     client.close()
 
 
-with DAG('airfow_etl_task', schedule_interval="@once", start_date=datetime(2022, 8, 22, 0, 0)) as dag:
+with DAG('airfow_etl_task', schedule_interval='@once', start_date=datetime(2022, 8, 22, 0, 0)) as dag:
     extract_task = PythonOperator(task_id='extract', python_callable=extract)
     transform_task = PythonOperator(task_id='transform', python_callable=transform)
     load_task = PythonOperator(task_id='load', python_callable=load)

@@ -1,0 +1,16 @@
+use airflow;
+
+// Top 5 famous commentaries
+db.reviews.find().sort({thumbsUpCount: -1}).limit(5)
+
+// All records, where length of field 'content' is less than 5 characters
+db.reviews.find({'$expr': {'$lt': [{'$strLenCP': '$content'}, 5]}})
+
+// Average rating by each day (should be in timestamp type)
+db.reviews.aggregate({
+    '$group':
+    {
+        _id: '$at',
+        averageQuantity: {$avg: '$thumbsUpCount'}
+    }
+})
